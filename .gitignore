@@ -1,0 +1,15 @@
+# Dependencies
+/server/backend/node_modules
+/server/frontend/node_modules
+
+# Environment Variables
+/server/backend/.env
+/server/frontend/.env
+
+# Build folder
+/server/frontend/dist
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
