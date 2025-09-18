@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import "/Users/ovdah/Desktop/Endinews/server/frontend/Components/Navbar.css";
-import { useAuth } from "/Users/ovdah/Desktop/Endinews/server/frontend/src/store/authcontext";
+import "../Components/Navbar.css";
+import { useAuth } from "../store/auth-context.jsx";
 
 export const Navbar = () => {
   const { isLoggedIn } = useAuth();

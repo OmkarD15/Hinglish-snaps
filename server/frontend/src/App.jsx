@@ -1,12 +1,12 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import { Navbar } from "/Users/ovdah/Desktop/Endinews/server/frontend/Components/Navbar";
-import { About } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/About";
-import { Contact } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Contact";
-import { Error } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Error";
-import { Home } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Home";
-import { Login } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Login";
-import { Logout } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Logout";
-import { Register } from "/Users/ovdah/Desktop/Endinews/server/frontend/pages/Register";
+import { Navbar } from "../Components/Navbar";
+import { About } from "../pages/About";
+import { Contact } from "../pages/Contact";
+import { Error } from "../pages/Error";
+import { Home } from "../pages/Home";
+import { Login } from "../pages/Login";
+import { Logout } from "../pages/Logout";
+import { Register } from "../pages/Register";
 
 const App = () => {
     return (

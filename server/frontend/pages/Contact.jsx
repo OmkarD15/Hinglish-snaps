@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "/Users/ovdah/Desktop/Endinews/server/frontend/src/store/authcontext";
+import { useAuth } from "../store/auth-context.jsx";
 
 const defaultContactFormData = {
     username: "",

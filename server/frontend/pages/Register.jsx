@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // ✅ 1. Corrected the import path to be relative
-import { useAuth } from "/Users/ovdah/Desktop/Endinews/server/frontend/src/store/authcontext";
+import { useAuth } from "../store/auth-context.jsx";
 
 const URL = "http://localhost:5000/api/auth/register";
 
