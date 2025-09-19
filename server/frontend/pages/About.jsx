@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Analytics } from "../components/Analytics";
+// ✅ 1. Corrected the import path to match directory casing
+import { Analytics } from "../Components/Analytics";
 
 export const About = () => {
   return (
@@ -10,7 +11,8 @@ export const About = () => {
             <div className="about-content">
               <h1 className="about-heading">Why Choose Us?</h1>
               <p className="about-description">
-                The objective of ENDI News is to provide concise, 50-60 word summaries, offering quick, accessible updates on tech and finance, saving time while keeping users informed and engaged.
+                {/* ✅ 2. Updated brand name for consistency */}
+                The objective of Hinglish Snaps is to provide concise, 50-60 word summaries, offering quick, accessible updates on tech and finance, saving time while keeping users informed and engaged.
               </p>
               <div className="btn-group">
                 <NavLink to="/contact">
