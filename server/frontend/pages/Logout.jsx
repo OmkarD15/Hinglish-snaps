@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 // ✅ FIX: Corrected the import path to be relative
-import { useAuth } from "../store/auth-context.jsx";
+import { useAuth } from "../src/store/auth-context.jsx";
 
 export const Logout = () => {
   const { removeTokenFromLS } = useAuth();
