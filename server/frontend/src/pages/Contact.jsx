@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 // ✅ 1. Corrected the import path to be relative
-import { useAuth } from "../src/store/auth-context.jsx";
+import { useAuth } from "../store/authcontext.jsx";
 
 const defaultContactFormData = {
   username: "",

@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 // ✅ FIX: Corrected the relative path to include the 'src' directory
-import { useAuth } from "../src/store/auth-context.jsx";
+import { useAuth } from "../store/authcontext.jsx";
 
 export const Navbar = () => {
   const { isLoggedIn } = useAuth();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // ✅ 1. Corrected the import path to be relative
-import { useAuth } from "../src/store/auth-context.jsx";
+import { useAuth } from "../store/authcontext.jsx";
 
 const URL = "http://localhost:5000/api/auth/login";
 
