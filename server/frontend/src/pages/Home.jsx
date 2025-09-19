@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import Card from '../Components/Card.jsx';
 
+// ✅ This line reads the live backend URL from the environment variable on Vercel.
+//    If it can't find it (like when you run it locally), it falls back to localhost.
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export const Home = () => {
     const [category, setCategory] = useState("finance");
     const [newsData, setNewsData] = useState([]);
@@ -9,7 +13,8 @@ export const Home = () => {
     const getData = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/news?category=${category}`);
+            // ✅ Using the API_URL variable for the fetch call
+            const response = await fetch(`${API_URL}/api/news?category=${category}`);
             const jsonData = await response.json();
             setNewsData(jsonData);
         } catch (error) {
@@ -36,14 +41,14 @@ export const Home = () => {
         <main>
             <section className="hero-section">
                 <div className="container">
-                    <h1 className="hero-heading">Welcome to ENDI News</h1>
+                    {/* ✅ Updated brand name for consistency */}
+                    <h1 className="hero-heading">Welcome to Hinglish Snaps</h1>
                     <p className="hero-subheading">Aapki Hinglish News, Sabse Pehle!</p>
                     <form onSubmit={(e) => e.preventDefault()} className="search-form">
-                        {/* ✅ Updated the dropdown to only show your chosen categories */}
                         <select value={category} onChange={handleCategoryChange} className="search-select">
                             <option value="finance">Finance</option>
                             <option value="technology">Technology</option>
-                            <option value="business">Business</option>
+                            <option value-="business">Business</option>
                         </select>
                     </form>
                 </div>
