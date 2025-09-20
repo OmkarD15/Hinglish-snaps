@@ -16,7 +16,7 @@ const { fetchAndStoreNews, retryFailedSummaries } = require("./utils/news-automa
 
 // Middleware
 app.use(cors({
-  origin: "https://hinglish-snaps-mte7.vercel.app",
+  origin: "https://hinglish-snaps-ng9mpb1ey-omkars-projects-7307657a.vercel.app/",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
