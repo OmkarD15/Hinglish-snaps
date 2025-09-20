@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Card from '../Components/Card.jsx';
 
-// ✅ This line reads the live backend URL from the environment variable on Vercel.
-//    If it can't find it (like when you run it locally), it falls back to localhost.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export const Home = () => {
@@ -10,10 +8,11 @@ export const Home = () => {
     const [newsData, setNewsData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const getData = async () => {
+    // ✅ 1. Wrapped the getData function in useCallback
+    //    It will only be recreated if the 'category' state changes.
+    const getData = useCallback(async () => {
         setIsLoading(true);
         try {
-            // ✅ Using the API_URL variable for the fetch call
             const response = await fetch(`${API_URL}/api/news?category=${category}`);
             const jsonData = await response.json();
             setNewsData(jsonData);
@@ -22,16 +21,18 @@ export const Home = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [category]); // The dependency for getData is the category
 
+    // ✅ 2. Added 'getData' to the dependency array, which now safely works
     useEffect(() => {
         getData();
-    }, [category]);
+    }, [getData]);
 
+    // ✅ 2. Added 'getData' to the dependency array here as well
     useEffect(() => {
         const pollInterval = setInterval(getData, 60000); 
         return () => clearInterval(pollInterval);
-    }, [category]); 
+    }, [getData]); 
 
     const handleCategoryChange = (e) => {
         setCategory(e.target.value);
@@ -41,14 +42,13 @@ export const Home = () => {
         <main>
             <section className="hero-section">
                 <div className="container">
-                    {/* ✅ Updated brand name for consistency */}
                     <h1 className="hero-heading">Welcome to Hinglish Snaps</h1>
                     <p className="hero-subheading">Aapki Hinglish News, Sabse Pehle!</p>
                     <form onSubmit={(e) => e.preventDefault()} className="search-form">
                         <select value={category} onChange={handleCategoryChange} className="search-select">
                             <option value="finance">Finance</option>
                             <option value="technology">Technology</option>
-                            <option value-="business">Business</option>
+                            <option value="business">Business</option>
                         </select>
                     </form>
                 </div>
