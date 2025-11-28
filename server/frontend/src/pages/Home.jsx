@@ -15,13 +15,14 @@ export const Home = () => {
     const [hasMore, setHasMore] = useState(false);
     const [totalResults, setTotalResults] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchedAll, setSearchedAll] = useState(false);
     
     // Search state
     const [searchInput, setSearchInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
     // Fetch news data with pagination and search
-    const getData = useCallback(async (pageNum = 1, append = false) => {
+    const getData = useCallback(async (pageNum = 1, append = false, categoryOverride = null) => {
         if (append) {
             setIsLoadingMore(true);
         } else {
@@ -30,8 +31,11 @@ export const Home = () => {
         
         try {
             const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+            const categoryToUse = categoryOverride !== null ? categoryOverride : category;
+            const categoryParam = categoryToUse ? `category=${encodeURIComponent(categoryToUse)}&` : "";
+
             const response = await fetch(
-                `${API_URL}/api/news?category=${category}&page=${pageNum}&limit=${ITEMS_PER_PAGE}${searchParam}`
+                `${API_URL}/api/news?${categoryParam}page=${pageNum}&limit=${ITEMS_PER_PAGE}${searchParam}`
             );
             const jsonData = await response.json();
             
@@ -44,6 +48,18 @@ export const Home = () => {
             setTotalResults(jsonData.total || 0);
             setTotalPages(jsonData.totalPages || 1);
             setPage(jsonData.page || 1);
+            // If no results were found for the scoped category search, automatically retry across all categories once.
+            if (!append && searchQuery && jsonData.total === 0 && categoryToUse !== 'all') {
+                // Avoid infinite retries: mark that we've tried the 'all' fallback
+                setSearchedAll(true);
+                // Fetch across all categories
+                await getData(1, false, 'all');
+            } else if (categoryToUse === 'all') {
+                // when results come from the 'all' fallback, keep searchedAll flag true
+                setSearchedAll(true);
+            } else {
+                setSearchedAll(false);
+            }
         } catch (error) {
             console.error("Error fetching news from backend:", error);
         } finally {

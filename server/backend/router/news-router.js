@@ -11,8 +11,11 @@ router.get("/", async (req, res) => {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 6)); // Default 6, max 50
     const search = req.query.search?.trim() || "";
 
-    // Build query filter
-    const filter = { category };
+    // Build query filter. If client passes category='all', do not filter by category (search across all categories).
+    const filter = {};
+    if (category && category !== 'all') {
+      filter.category = category;
+    }
 
     // Add search filter if search term provided
     if (search) {
