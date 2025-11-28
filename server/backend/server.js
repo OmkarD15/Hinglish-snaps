@@ -45,5 +45,5 @@ connectDb().then(() => {
 });
 
 // Scheduled the automation jobs
-cron.schedule("0 * * * *", fetchAndStoreNews);
-cron.schedule("*/10 * * * *", retryFailedSummaries);
+cron.schedule("* * * * *", fetchAndStoreNews);
+cron.schedule("* * * * *", retryFailedSummaries);
