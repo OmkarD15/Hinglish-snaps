@@ -3,12 +3,14 @@ const News = require("../models/news-model.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+// ✅ FIX 1: Use the correct, stable model name
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const CATEGORIES = ["finance", "technology", "business"];
 
-// ✅ Limit how many times we retry Gemini for the same article
-const MAX_RETRY_COUNT = 3;
+// ✅ FIX 2: Increase this temporarily to 10 so it retries your existing failed articles
+const MAX_RETRY_COUNT = 10;
 
 const fetchAndStoreNews = async () => {
   console.log("📰 Cron Job: Fetching fresh news for selected categories...");
@@ -72,19 +74,17 @@ const fetchAndStoreNews = async () => {
   console.log("✅ Cron Job: Finished processing all categories.");
 };
 
-// ✅ Retry Gemini for articles where we previously used a fallback English summary
 const retryFailedSummaries = async () => {
   console.log("♻️ Cron Job: Retrying failed Hinglish summaries...");
 
   try {
-    // Find articles where we are still using a fallback summary and
-    // haven't exceeded the maximum retry count.
+    // Finds articles that failed previously (retryCount < 10)
     const articlesNeedingRetry = await News.find({
       isFallback: true,
       retryCount: { $lt: MAX_RETRY_COUNT },
     })
       .sort({ createdAt: 1 })
-      .limit(25); // safety limit per run
+      .limit(25);
 
     if (!articlesNeedingRetry.length) {
       console.log("ℹ️ No fallback summaries to retry right now.");
@@ -93,21 +93,21 @@ const retryFailedSummaries = async () => {
 
     for (const article of articlesNeedingRetry) {
       try {
-        // We only have the title + the existing (English) fallback summary,
-        // so we ask Gemini to turn that into a Hinglish summary.
+        console.log(`Attempting to convert: "${article.title}"`); // Added log to see progress
+        
         const prompt = `Convert the following news into a 50-60 word natural, engaging Hinglish summary (Roman Hindi + English mix). Preserve key names and technical terms. News: "${article.title}. ${article.hinglishSummary}"`;
 
         const result = await model.generateContent(prompt);
         const newSummary = result.response.text().trim();
 
         article.hinglishSummary = newSummary;
-        article.isFallback = false; // no longer using fallback
-        article.retryCount = article.retryCount + 1;
+        article.isFallback = false;
+        // Reset retry count on success so it looks clean
+        article.retryCount = 0; 
         await article.save();
 
         console.log(`✅ Successfully updated Hinglish summary for: ${article.title}`);
       } catch (error) {
-        // On failure, just bump retryCount so we don't loop forever.
         article.retryCount = article.retryCount + 1;
         await article.save();
         console.error(`❌ Retry failed for "${article.title}":`, error.message);
