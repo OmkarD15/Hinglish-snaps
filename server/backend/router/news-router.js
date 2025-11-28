@@ -1,4 +1,5 @@
 const express = require("express");
+const fetch = require("node-fetch");
 const News = require("../models/news-model.js");
 const router = express.Router();
 
@@ -17,7 +18,50 @@ router.get("/", async (req, res) => {
       filter.category = category;
     }
 
-    // Add search filter if search term provided
+    // If a search term is provided, query the external NewsAPI (global search)
+    if (search) {
+      try {
+        // If category specified and not 'all', append it to the query to bias results
+        const extra = category && category !== 'all' ? ` AND ${category}` : '';
+        const q = encodeURIComponent(`${search}${extra}`);
+        const url = `https://newsapi.org/v2/everything?q=${q}&language=en&pageSize=${limit}&page=${page}&apiKey=${process.env.NEWS_API_KEY}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.status === 'error') {
+          console.error('NewsAPI error:', data.message);
+          return res.status(502).json({ message: 'Failed to fetch from NewsAPI', error: data.message });
+        }
+
+        const mapped = (data.articles || []).map((a) => ({
+          title: a.title,
+          url: a.url,
+          image: a.urlToImage,
+          hinglishSummary: a.description || a.content || "",
+          source: a.source?.name,
+          publishedAt: a.publishedAt,
+          category: category && category !== 'all' ? category : 'all',
+          isFallback: true,
+        }));
+
+        const totalResults = data.totalResults || mapped.length;
+        const totalPages = Math.ceil(totalResults / limit);
+
+        return res.status(200).json({
+          articles: mapped,
+          total: totalResults,
+          page,
+          totalPages,
+          hasMore: page < totalPages,
+        });
+      } catch (err) {
+        console.error('Error querying NewsAPI:', err.message);
+        return res.status(500).json({ message: 'Failed to fetch news from external API.' });
+      }
+    }
+
+    // Add search filter if search term provided (DB fallback)
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },

@@ -22,7 +22,7 @@ export const Home = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     // Fetch news data with pagination and search
-    const getData = useCallback(async (pageNum = 1, append = false, categoryOverride = null) => {
+    const getData = useCallback(async (pageNum = 1, append = false, categoryOverride = null, searchTerm = undefined) => {
         if (append) {
             setIsLoadingMore(true);
         } else {
@@ -30,7 +30,8 @@ export const Home = () => {
         }
         
         try {
-            const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+            const usedSearch = (searchTerm !== undefined) ? searchTerm : searchQuery;
+            const searchParam = usedSearch ? `&search=${encodeURIComponent(usedSearch)}` : "";
             const categoryToUse = categoryOverride !== null ? categoryOverride : category;
             const categoryParam = categoryToUse ? `category=${encodeURIComponent(categoryToUse)}&` : "";
 
@@ -49,11 +50,11 @@ export const Home = () => {
             setTotalPages(jsonData.totalPages || 1);
             setPage(jsonData.page || 1);
             // If no results were found for the scoped category search, automatically retry across all categories once.
-            if (!append && searchQuery && jsonData.total === 0 && categoryToUse !== 'all') {
+            if (!append && usedSearch && jsonData.total === 0 && categoryToUse !== 'all') {
                 // Avoid infinite retries: mark that we've tried the 'all' fallback
                 setSearchedAll(true);
                 // Fetch across all categories
-                await getData(1, false, 'all');
+                await getData(1, false, 'all', usedSearch);
             } else if (categoryToUse === 'all') {
                 // when results come from the 'all' fallback, keep searchedAll flag true
                 setSearchedAll(true);
@@ -94,9 +95,12 @@ export const Home = () => {
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        setSearchQuery(searchInput.trim());
+        const term = searchInput.trim();
+        setSearchQuery(term);
         setPage(1);
         setTotalPages(1);
+        // Run search immediately using the typed input to avoid state update timing issues
+        getData(1, false, null, term);
     };
 
     const handleClearSearch = () => {
@@ -104,6 +108,8 @@ export const Home = () => {
         setSearchQuery("");
         setPage(1);
         setTotalPages(1);
+        // Refresh data without search immediately
+        getData(1, false, null, "");
     };
 
     const handleLoadMore = () => {
