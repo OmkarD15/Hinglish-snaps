@@ -17,7 +17,7 @@ const corsOptions = {
     "http://localhost:5173", // For local development
     "https://hinglish-snaps-mte7.vercel.app", // Your old URL
     "https://hinglish-snaps-ng9mpb1ey-omkars-projects-7307657a.vercel.app", // Your new URL
-    // You can add your main production URL here later too
+    "https://hinglish-snaps-l13v.vercel.app" // Another deployment URL
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
