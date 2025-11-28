@@ -10,7 +10,6 @@ const contactRouter = require("./router/contact-router");
 const errorMiddleware = require("./middlewares/error-middleware");
 const newsRouter = require("./router/news-router");
 const { fetchAndStoreNews, retryFailedSummaries } = require("./utils/news-automation");
-const { processConversionQueue } = require("./utils/conversion-worker");
 
 // ✅ FIX: Allow multiple specific URLs to make requests
 const corsOptions = {
@@ -48,4 +47,4 @@ connectDb().then(() => {
 // Scheduled the automation jobs
 cron.schedule("0 * * * *", fetchAndStoreNews);
 cron.schedule("*/5 * * * *", retryFailedSummaries);
-cron.schedule("*/30 * * * * *", processConversionQueue); // Run conversion worker every 30 seconds
+// Note: background conversion worker removed as we use on-demand conversion (Option C)

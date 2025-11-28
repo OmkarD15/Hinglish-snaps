@@ -20,6 +20,8 @@ export const Home = () => {
     // Search state
     const [searchInput, setSearchInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    // Option C: manual toggle to enable on-the-fly Hinglish conversion for the returned page
+    const [showHinglish, setShowHinglish] = useState(false);
 
     // Fetch news data with pagination and search
     const getData = useCallback(async (pageNum = 1, append = false, categoryOverride = null, searchTerm = undefined) => {
@@ -35,8 +37,9 @@ export const Home = () => {
             const categoryToUse = categoryOverride !== null ? categoryOverride : category;
             const categoryParam = categoryToUse ? `category=${encodeURIComponent(categoryToUse)}&` : "";
 
+            const convertParam = showHinglish ? `&convert=true` : "";
             const response = await fetch(
-                `${API_URL}/api/news?${categoryParam}page=${pageNum}&limit=${ITEMS_PER_PAGE}${searchParam}`
+                `${API_URL}/api/news?${categoryParam}page=${pageNum}&limit=${ITEMS_PER_PAGE}${searchParam}${convertParam}`
             );
             const jsonData = await response.json();
             
@@ -67,7 +70,7 @@ export const Home = () => {
             setIsLoading(false);
             setIsLoadingMore(false);
         }
-    }, [category, searchQuery]);
+    }, [category, searchQuery, showHinglish]);
 
     // Initial load and when category/search changes
     useEffect(() => {
@@ -91,6 +94,14 @@ export const Home = () => {
             setPage(1);
             setTotalPages(1);
         }
+    };
+
+    const handleToggleHinglish = () => {
+        setShowHinglish((s) => !s);
+        // reload page 1 with the new preference
+        setPage(1);
+        setTotalPages(1);
+        getData(1, false);
     };
 
     const handleSearchSubmit = (e) => {
@@ -158,6 +169,13 @@ export const Home = () => {
                                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
                             </button>
                         ))}
+                    </div>
+                    {/* Hinglish toggle */}
+                    <div className="hinglish-toggle" style={{ marginTop: '10px' }}>
+                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={showHinglish} onChange={handleToggleHinglish} />
+                            <span>Show Hinglish summaries</span>
+                        </label>
                     </div>
                 </div>
             </section>

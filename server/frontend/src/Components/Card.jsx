@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 // Placeholder image for articles without images
 const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=300&fit=crop&auto=format";
@@ -33,68 +34,101 @@ const getRelativeTime = (dateString) => {
     });
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const ArticleCard = ({ item }) => {
+    const [hinglishSummary, setHinglishSummary] = useState(item.hinglishSummary || '');
+    const [isConverting, setIsConverting] = useState(false);
+    const [converted, setConverted] = useState(!item.isFallback);
+
+    const readMore = (url) => window.open(url, '_blank', 'noopener,noreferrer');
+    const handleImageError = (e) => { e.target.src = PLACEHOLDER_IMAGE; };
+
+    const convertNow = async () => {
+        if (isConverting) return;
+        setIsConverting(true);
+        try {
+            const resp = await fetch(`${API_URL}/api/news/convert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: item.url,
+                    title: item.title,
+                    description: item.hinglishSummary || item.description || '',
+                    image: item.image,
+                    source: item.source,
+                    publishedAt: item.publishedAt,
+                }),
+            });
+            const data = await resp.json();
+            if (resp.ok && data.hinglishSummary) {
+                setHinglishSummary(data.hinglishSummary);
+                setConverted(true);
+            } else {
+                console.error('Conversion error', data);
+            }
+        } catch (err) {
+            console.error('Conversion request failed', err);
+        } finally {
+            setIsConverting(false);
+        }
+    };
+
+    const imageUrl = item.image || PLACEHOLDER_IMAGE;
+    const relativeTime = getRelativeTime(item.publishedAt);
+
+    return (
+        <div className='card'>
+            <div className="card-image-wrapper">
+                <img 
+                    src={imageUrl} 
+                    alt={item.title || "News image"}
+                    onError={handleImageError}
+                    loading="lazy"
+                />
+                {item.source && (
+                    <span className="card-source-badge">{item.source}</span>
+                )}
+            </div>
+            <div className='content'>
+                <div className="card-meta">
+                    <span className="card-time">🕒 {relativeTime}</span>
+                </div>
+                <a className='title' href={item.url} target="_blank" rel="noopener noreferrer">
+                    {item.title}
+                </a>
+                <p className='summary'>
+                    {hinglishSummary}
+                    {!converted && (
+                        <span className="fallback-notice"> ⏳ Hinglish summary not available yet</span>
+                    )}
+                </p>
+                <div className="card-actions">
+                    <button onClick={() => readMore(item.url)} className="read-more-btn">
+                        Read Full Article
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="arrow-icon">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    {!converted && (
+                        <button onClick={convertNow} className="convert-btn" disabled={isConverting}>
+                            {isConverting ? 'Converting...' : 'Convert to Hinglish'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const Card = ({ data }) => {
-    const readMore = (url) => {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
-
-    // Handle image loading errors
-    const handleImageError = (e) => {
-        e.target.src = PLACEHOLDER_IMAGE;
-    };
-
-    if (!data || data.length === 0) {
-        return null;
-    }
+    if (!data || data.length === 0) return null;
 
     return (
         <div className='card-container'>
-            {data.map((curItem) => {
-                if (!curItem) return null;
-
-                const imageUrl = curItem.image || PLACEHOLDER_IMAGE;
-                const relativeTime = getRelativeTime(curItem.publishedAt);
-
-                return (
-                    <div className='card' key={curItem.url || curItem._id}>
-                        <div className="card-image-wrapper">
-                            <img 
-                                src={imageUrl} 
-                                alt={curItem.title || "News image"}
-                                onError={handleImageError}
-                                loading="lazy"
-                            />
-                            {curItem.source && (
-                                <span className="card-source-badge">{curItem.source}</span>
-                            )}
-                        </div>
-                        <div className='content'>
-                            <div className="card-meta">
-                                <span className="card-time">🕒 {relativeTime}</span>
-                            </div>
-                            <a className='title' href={curItem.url} target="_blank" rel="noopener noreferrer">
-                                {curItem.title}
-                            </a>
-                            <p className='summary'>
-                                {curItem.hinglishSummary}
-                                {curItem.isFallback && (
-                                    <span className="fallback-notice">
-                                        ⏳ Hinglish summary coming soon...
-                                    </span>
-                                )}
-                            </p>
-                            <div className="card-actions">
-                                <button onClick={() => readMore(curItem.url)} className="read-more-btn">
-                                    Read Full Article
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="arrow-icon">
-                                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
+            {data.map((curItem) => (
+                <ArticleCard key={curItem.url || curItem._id} item={curItem} />
+            ))}
         </div>
     );
 };

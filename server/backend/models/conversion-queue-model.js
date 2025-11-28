@@ -1,22 +1,6 @@
-const mongoose = require("mongoose");
+// This file previously implemented the ConversionQueue model for the Option B
+// background conversion pipeline. That approach was removed in favor of
+// on-demand conversion (Option C). The file is intentionally left as a
+// placeholder to avoid accidental runtime imports elsewhere; it exports null.
 
-const conversionQueueSchema = new mongoose.Schema(
-  {
-    url: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    description: { type: String },
-    source: { type: String },
-    publishedAt: { type: Date },
-    status: { type: String, enum: ["pending", "processing", "completed", "failed"], default: "pending" },
-    hinglishSummary: { type: String },
-    error: { type: String },
-    retryCount: { type: Number, default: 0 },
-  },
-  { timestamps: true }
-);
-
-// Expire documents after 7 days to clean up completed conversions
-conversionQueueSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
-
-const ConversionQueue = mongoose.model("ConversionQueue", conversionQueueSchema);
-module.exports = ConversionQueue;
+module.exports = null;
