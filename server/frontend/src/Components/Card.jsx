@@ -41,9 +41,6 @@ const ArticleCard = ({ item }) => {
     const [isConverting, setIsConverting] = useState(false);
     const [converted, setConverted] = useState(!item.isFallback);
 
-    // DEBUG: log item to verify isFallback and other props
-    // Remove this in production
-    console.log('DEBUG ArticleCard item:', { url: item.url, title: item.title, isFallback: item.isFallback });
 
     const readMore = (url) => window.open(url, '_blank', 'noopener,noreferrer');
     const handleImageError = (e) => { e.target.src = PLACEHOLDER_IMAGE; };
@@ -107,7 +104,7 @@ const ArticleCard = ({ item }) => {
                         <span className="fallback-notice"> ⏳ Hinglish summary not available yet</span>
                     )}
                 </p>
-                <div className="card-actions debug">
+                <div className="card-actions">
                     <button onClick={() => readMore(item.url)} className="read-more-btn">
                         Read Full Article
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="arrow-icon">
