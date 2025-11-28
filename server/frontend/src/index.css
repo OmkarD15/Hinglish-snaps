@@ -539,6 +539,13 @@ img {
   transform: translateY(-2px);
 }
 
+/* DEBUG: temporary red dashed border to visually confirm card-actions area */
+.card-actions.debug {
+  border: 2px dashed rgba(220, 38, 38, 0.9);
+  padding: 8px;
+  border-radius: 8px;
+}
+
 /* ===== LOAD MORE SECTION ===== */
 .load-more-container {
   display: flex;
