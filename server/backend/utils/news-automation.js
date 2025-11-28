@@ -1,16 +1,29 @@
 const fetch = require("node-fetch");
 const News = require("../models/news-model.js");
-// ✅ NEW SDK IMPORT
 const { GoogleGenAI } = require("@google/genai");
 
-// ✅ NEW CLIENT INITIALIZATION
-// The SDK automatically reads GEMINI_API_KEY from process.env
+// Initialize the new SDK client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const CATEGORIES = ["finance", "technology", "business"];
+const MAX_RETRY_COUNT = 10;
 
-// Limit how many times we retry Gemini for the same article
-const MAX_RETRY_COUNT = 3;
+// ✅ Improved Prompt Function for Consistent Style
+const getHinglishPrompt = (text) => {
+  return `
+  Task: Summarize this news in casual "Hinglish" (Hindi written in English script).
+  
+  Strict Rules:
+  1. Script: Use ONLY the English alphabet. NO Devanagari script.
+  2. Tone: Casual, layman, conversational (like talking to a friend).
+  3. Style: Use simple English for technical terms, but Hindi grammar/fillers.
+     - Bad: "Vartamaan mein sthiti gambhir hai." (Too formal)
+     - Good: "Abhi situation thodi serious hai boss." (Perfect layman style)
+  4. Length: Keep it under 60 words.
+  
+  News to summarize: "${text}"
+  `;
+};
 
 const fetchAndStoreNews = async () => {
   console.log("📰 Cron Job: Fetching fresh news for selected categories...");
@@ -42,9 +55,9 @@ const fetchAndStoreNews = async () => {
         let isFallback = false;
 
         try {
-          const prompt = `Summarize this news in 50-60 words in natural, engaging Hinglish (Roman Hindi + English mix). Preserve names and technical terms. News: "${article.title}. ${article.description}"`;
+          const prompt = getHinglishPrompt(`${article.title}. ${article.description}`);
           
-          // ✅ NEW GENERATION SYNTAX
+          // ✅ New SDK Syntax
           const { text } = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -80,7 +93,6 @@ const fetchAndStoreNews = async () => {
   console.log("✅ Cron Job: Finished processing all categories.");
 };
 
-// Retry Gemini for articles where we previously used a fallback English summary
 const retryFailedSummaries = async () => {
   console.log("♻️ Cron Job: Retrying failed Hinglish summaries...");
 
@@ -99,9 +111,10 @@ const retryFailedSummaries = async () => {
 
     for (const article of articlesNeedingRetry) {
       try {
-        const prompt = `Convert the following news into a 50-60 word natural, engaging Hinglish summary (Roman Hindi + English mix). Preserve key names and technical terms. News: "${article.title}. ${article.hinglishSummary}"`;
+        // Use the same improved prompt for retries
+        const prompt = getHinglishPrompt(`${article.title}. ${article.hinglishSummary}`);
 
-        // ✅ NEW GENERATION SYNTAX
+        // ✅ New SDK Syntax
         const { text } = await ai.models.generateContent({
           model: "gemini-2.5-flash",
           contents: prompt,
