@@ -1,9 +1,6 @@
 const fetch = require("node-fetch");
 const News = require("../models/news-model.js");
-const { GoogleGenAI } = require("@google/genai");
-
-// Initialize the new SDK client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const { convertToHinglish } = require("./hinglish-converter.js");
 
 const CATEGORIES = ["finance", "technology", "business"];
 const MAX_RETRY_COUNT = 10;
@@ -57,13 +54,8 @@ const fetchAndStoreNews = async () => {
         try {
           const prompt = getHinglishPrompt(`${article.title}. ${article.description}`);
           
-          // ✅ New SDK Syntax
-          const { text } = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-          });
-          
-          hinglishSummary = text.trim();
+          // ✅ Use shared converter helper
+          hinglishSummary = await convertToHinglish(article.title, article.description);
         } catch (error) {
           console.error(`Gemini failed for "${article.title}". Using fallback. Error: ${error.message}`);
           hinglishSummary = (article.description || "").substring(0, 200) + "...";
@@ -114,13 +106,8 @@ const retryFailedSummaries = async () => {
         // Use the same improved prompt for retries
         const prompt = getHinglishPrompt(`${article.title}. ${article.hinglishSummary}`);
 
-        // ✅ New SDK Syntax
-        const { text } = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: prompt,
-        });
-        
-        const newSummary = text.trim();
+        // ✅ Use shared converter helper
+        const newSummary = await convertToHinglish(article.title, article.hinglishSummary);
 
         article.hinglishSummary = newSummary;
         article.isFallback = false;

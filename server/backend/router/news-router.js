@@ -4,24 +4,17 @@ const News = require("../models/news-model.js");
 const router = express.Router();
 
 // GET /api/news?category=finance&page=1&limit=6&search=keyword
-// Serves pre-processed news from the database with pagination and search support.
+// Serves news from database (if no search) or external NewsAPI (if search provided)
 router.get("/", async (req, res) => {
   try {
-    const category = req.query.category || "finance"; // Default to finance
-    const page = Math.max(1, parseInt(req.query.page) || 1); // Default page 1
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 6)); // Default 6, max 50
+    const category = req.query.category || "finance";
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 6));
     const search = req.query.search?.trim() || "";
 
-    // Build query filter. If client passes category='all', do not filter by category (search across all categories).
-    const filter = {};
-    if (category && category !== 'all') {
-      filter.category = category;
-    }
-
-    // If a search term is provided, query the external NewsAPI (global search)
+    // If search term provided, query NewsAPI globally
     if (search) {
       try {
-        // If category specified and not 'all', append it to the query to bias results
         const extra = category && category !== 'all' ? ` AND ${category}` : '';
         const q = encodeURIComponent(`${search}${extra}`);
         const url = `https://newsapi.org/v2/everything?q=${q}&language=en&pageSize=${limit}&page=${page}&apiKey=${process.env.NEWS_API_KEY}`;
@@ -31,25 +24,25 @@ router.get("/", async (req, res) => {
 
         if (data.status === 'error') {
           console.error('NewsAPI error:', data.message);
-          return res.status(502).json({ message: 'Failed to fetch from NewsAPI', error: data.message });
+          return res.status(502).json({ message: 'NewsAPI error', error: data.message });
         }
 
-        const mapped = (data.articles || []).map((a) => ({
+        const articles = (data.articles || []).map((a) => ({
           title: a.title,
           url: a.url,
           image: a.urlToImage,
-          hinglishSummary: a.description || a.content || "",
+          hinglishSummary: a.description || a.content || "(No summary available)",
           source: a.source?.name,
           publishedAt: a.publishedAt,
-          category: category && category !== 'all' ? category : 'all',
+          category: 'search',
           isFallback: true,
         }));
 
-        const totalResults = data.totalResults || mapped.length;
+        const totalResults = data.totalResults || 0;
         const totalPages = Math.ceil(totalResults / limit);
 
         return res.status(200).json({
-          articles: mapped,
+          articles,
           total: totalResults,
           page,
           totalPages,
@@ -57,26 +50,20 @@ router.get("/", async (req, res) => {
         });
       } catch (err) {
         console.error('Error querying NewsAPI:', err.message);
-        return res.status(500).json({ message: 'Failed to fetch news from external API.' });
+        return res.status(500).json({ message: 'Failed to fetch from NewsAPI.' });
       }
     }
 
-    // Add search filter if search term provided (DB fallback)
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { hinglishSummary: { $regex: search, $options: "i" } },
-      ];
+    // No search: query database
+    const filter = {};
+    if (category && category !== 'all') {
+      filter.category = category;
     }
 
-    // Get total count for pagination
     const total = await News.countDocuments(filter);
     const totalPages = Math.ceil(total / limit);
-
-    // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Fetch articles with pagination
     const articles = await News.find(filter)
       .sort({ publishedAt: -1 })
       .skip(skip)
@@ -91,7 +78,7 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching news:", error.message);
-    res.status(500).json({ message: "Failed to fetch news from database." });
+    res.status(500).json({ message: "Server error." });
   }
 });
 
