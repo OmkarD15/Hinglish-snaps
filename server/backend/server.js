@@ -15,9 +15,10 @@ const { fetchAndStoreNews, retryFailedSummaries } = require("./utils/news-automa
 const corsOptions = {
   origin: [
     "http://localhost:5173", // For local development
-    "https://hinglish-snaps-mte7.vercel.app", // Your old URL
-    "https://hinglish-snaps-ng9mpb1ey-omkars-projects-7307657a.vercel.app", // Your new URL
-    "https://hinglish-snaps-l13v.vercel.app" // Another deployment URL
+    "http://localhost:5000", // For local backend testing
+    "https://hinglish-snaps-l13v.vercel.app", // Production Vercel frontend
+    "https://hinglish-snaps-mte7.vercel.app", // Old Vercel URL (backwards compatibility)
+    "https://hinglish-snaps-ng9mpb1ey-omkars-projects-7307657a.vercel.app" // Another old URL
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,

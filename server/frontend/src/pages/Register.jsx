@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 // ✅ 1. Corrected the import path to be relative
 import { useAuth } from "../store/authcontext.jsx";
 
-const URL = "http://localhost:5000/api/auth/register";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const URL = `${API_URL}/api/auth/register`;
 
 export const Register = () => {
   const [user, setUser] = useState({
@@ -120,6 +121,7 @@ export const Register = () => {
                   onChange={handleInput}
                   className="form-input"
                   placeholder="Enter your password"
+                  autoComplete="new-password"
                   required
                 />
               </div>
