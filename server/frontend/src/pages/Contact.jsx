@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 // ✅ 1. Corrected the import path to be relative
 import { useAuth } from "../store/authcontext.jsx";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const defaultContactFormData = {
   username: "",
   email: "",
@@ -31,7 +33,7 @@ export const Contact = () => {
   const handleContactForm = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/form/contact", {
+      const response = await fetch(`${API_URL}/api/form/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
