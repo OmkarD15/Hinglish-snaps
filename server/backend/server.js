@@ -45,6 +45,7 @@ connectDb().then(() => {
 });
 
 // Scheduled the automation jobs
-cron.schedule("0 * * * *", fetchAndStoreNews);
+// Fetch fresh news every 30 minutes (was hourly "0 * * * *")
+cron.schedule("*/30 * * * *", fetchAndStoreNews);
 cron.schedule("*/5 * * * *", retryFailedSummaries);
 // Note: background conversion worker removed as we use on-demand conversion (Option C)

@@ -28,7 +28,7 @@ const fetchAndStoreNews = async () => {
   for (const category of CATEGORIES) {
     try {
       const query = encodeURIComponent(`india AND ${category}`);
-      const url = `https://newsapi.org/v2/everything?q=${query}&language=en&pageSize=10&apiKey=${process.env.NEWS_API_KEY}`;
+      const url = `https://newsapi.org/v2/everything?q=${query}&language=en&pageSize=50&apiKey=${process.env.NEWS_API_KEY}`;
       
       const response = await fetch(url);
       const data = await response.json();

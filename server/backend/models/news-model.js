@@ -17,8 +17,8 @@ const newsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ MongoDB will automatically delete documents 24 hours after they are created.
-newsSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 });
+// ✅ MongoDB will automatically delete documents 7 days after they are created.
+newsSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
 
 const News = mongoose.model("News", newsSchema);
 module.exports = News;
