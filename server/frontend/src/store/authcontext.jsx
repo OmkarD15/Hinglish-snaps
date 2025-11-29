@@ -1,7 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 // 2. Define the Provider component
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -29,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     }
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/api/auth/user`, {
+      const response = await fetch("http://localhost:5000/api/auth/user", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
